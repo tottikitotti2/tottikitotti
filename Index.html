@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>新春聚財 - 蘭得規劃活動</title>
+    <!-- 引入 Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入 Google Fonts (Noto Sans TC) -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #FFFBF7;
+            overflow-x: hidden;
+        }
+        /* 品牌色定義 */
+        .text-peach { color: #f33d5b; }
+        .bg-peach { background-color: #f33d5b; }
+        .text-teal-custom { color: #2D6A6A; }
+        .bg-teal-custom { background-color: #2D6A6A; }
+        .border-teal-custom { border-color: #2D6A6A; }
+        
+        /* 字型：可畫復古黑-繁 (模擬效果) */
+        .font-retro-bold {
+            font-family: "Canva Retro Hei", "可畫復古黑-繁", "Noto Sans TC", sans-serif;
+            font-weight: 900; 
+            letter-spacing: 0.02em;
+        }
+
+        /* 玻璃擬態效果 */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(12px) saturate(160%);
+            -webkit-backdrop-filter: blur(12px) saturate(160%);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.05);
+        }
+        
+        .orchid-shadow {
+            text-shadow: 0 2px 12px rgba(0,0,0,0.2), 0 0 5px rgba(255,255,255,0.4);
+        }
+
+        /* 背景影片容器 */
+        .hero-bg-wrapper {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            overflow: hidden;
+            background-color: #000;
+        }
+        .hero-bg-wrapper video {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            min-width: 100%;
+            min-height: 100%;
+            width: 100%; 
+            height: 100%;
+            object-fit: cover;
+            transform: translate(-50%, -50%);
+            filter: brightness(0.95);
+        }
+
+        .hero-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, rgba(255,251,247,0.5) 0%, rgba(255,251,247,0) 40%);
+            z-index: 1;
+        }
+        @media (min-width: 768px) {
+            .hero-overlay {
+                background: radial-gradient(circle at 25% 50%, rgba(255,251,247,0.2) 0%, rgba(255,251,247,0.02) 80%);
+            }
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 10;
+        }
+
+        /* 滾動顯現動畫 */
+        .reveal {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* 花瓣特效 */
+        #particle-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 5;
+        }
+        .petal {
+            position: absolute;
+            background: #f33d5b;
+            border-radius: 150% 0 150% 0;
+            opacity: 0.2;
+            animation: fall linear infinite;
+        }
+        @keyframes fall {
+            0% { transform: translate(0, -10px) rotate(0deg); opacity: 0; }
+            10% { opacity: 0.3; }
+            90% { opacity: 0.1; }
+            100% { transform: translate(80px, 100vh) rotate(360deg); opacity: 0; }
+        }
+
+        /* 互動式相簿容器 */
+        .gallery-scroll-container {
+            display: flex;
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            gap: 20px;
+            padding: 40px 0; 
+            scrollbar-width: none; 
+            -ms-overflow-style: none; 
+            cursor: grab;
+            scroll-behavior: smooth;
+        }
+        .gallery-scroll-container::-webkit-scrollbar { display: none; }
+        
+        .gallery-item {
+            scroll-snap-align: center;
+            flex-shrink: 0;
+            width: 70vw; 
+            max-width: 350px;
+            height: 240px;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            background: #eee;
+            transform: scale(0.85); 
+            transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            opacity: 0.6;
+            margin: 0 -5vw;
+        }
+        
+        .gallery-item.is-focused {
+            transform: scale(1.1);
+            opacity: 1;
+            z-index: 30;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.25);
+            margin: 0 2vw;
+        }
+
+        @media (min-width: 768px) {
+            .gallery-item {
+                width: 400px;
+                height: 300px;
+                margin: 0 -2vw;
+            }
+            .gallery-item.is-focused { transform: scale(1.15); }
+        }
+
+        .gallery-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            pointer-events: none; 
+        }
+
+        /* 倒數計時：手機版水平排列優化 */
+        .countdown-grid {
+            display: flex !important;
+            flex-direction: row !important;
+            flex-wrap: nowrap !important;
+            gap: 0.35rem; 
+            width: 100%;
+            margin-bottom: 1rem;
+        }
+        
+        @media (min-width: 768px) {
+            .countdown-grid { gap: 0.75rem; margin-bottom: 1.5rem; }
+        }
+
+        .countdown-unit {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 8px;
+            height: 52px; 
+            position: relative;
+        }
+
+        @media (min-width: 768px) {
+            .countdown-unit { height: 85px; border-radius: 14px; }
+        }
+
+        .countdown-unit::after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 0;
+            width: 100%;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.1);
+            z-index: 1;
+        }
+
+        .countdown-val {
+            font-family: "Canva Retro Hei", "可畫復古黑-繁", "Noto Sans TC", sans-serif;
+            font-weight: 900;
+            color: #ffffff;
+            line-height: 1;
+            z-index: 10;
+            font-size: 1.15rem; 
+        }
+        
+        @media (min-width: 768px) { .countdown-val { font-size: 2.2rem; } }
+
+        .countdown-label {
+            font-size: 0.6rem; 
+            color: rgba(255, 255, 255, 0.6);
+            font-weight: 700;
+            margin-top: 2px;
+            z-index: 10;
+        }
+        @media (min-width: 768px) { .countdown-label { font-size: 0.85rem; margin-top: 6px; } }
+
+        /* 表單元素樣式 */
+        .form-input {
+            @apply w-full px-4 py-3 md:px-5 md:py-4 rounded-xl md:rounded-2xl bg-gray-50 border border-transparent focus:bg-white focus:border-[#f33d5b] focus:ring-0 outline-none transition-all duration-300;
+        }
+        
+        .form-select {
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232D6A6A' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 1.1em;
+            padding-right: 2.5rem !important; 
+        }
+
+        /* 按鈕呼吸 */
+        .btn-pulse {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(243, 61, 91, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(243, 61, 91, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(243, 61, 91, 0); }
+        }
+        
+        #mobile-menu {
+            transition: transform 0.4s cubic-bezier(0.77,0.2,0.05,1.0), opacity 0.3s ease;
+        }
+
+        .map-wrapper {
+            position: relative;
+            padding-bottom: 56.25%; 
+            height: 0;
+            overflow: hidden;
+            border-radius: 24px;
+        }
+        .map-wrapper iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <div id="particle-container"></div>
+
+    <!-- 導航欄 -->
+    <header class="fixed w-full z-50 bg-white/60 backdrop-blur-md border-b border-gray-100 transition-all" id="main-header">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-14 md:h-20">
+                <div class="text-base md:text-2xl font-bold text-teal-custom tracking-wider shrink-0 cursor-pointer" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
+                    新春聚財 <span class="text-peach">蘭得規劃</span>
+                </div>
+                
+                <!-- 電腦版選單 -->
+                <nav class="hidden md:flex items-center space-x-8">
+                    <a href="#about" class="hover:text-peach transition font-medium">活動簡介</a>
+                    <a href="#highlights" class="hover:text-peach transition font-medium">精彩亮點</a>
+                    <a href="#gallery" class="hover:text-peach transition font-medium">精彩回顧</a>
+                    <a href="#details" class="hover:text-peach transition font-medium">活動資訊</a>
+                    <a href="#register" class="bg-teal-custom text-white px-6 py-2 rounded-full font-bold btn-pulse">立即報名</a>
+                </nav>
+
+                <!-- 手機版選單按鈕 -->
+                <button id="menu-toggle" class="md:hidden p-2 text-teal-custom focus:outline-none z-[60]">
+                    <svg id="menu-icon-open" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
+                    </svg>
+                    <svg id="menu-icon-close" class="w-8 h-8 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- 手機版全螢幕選單 -->
+    <div id="mobile-menu" class="fixed inset-0 z-50 bg-white/95 backdrop-blur-xl flex flex-col items-center justify-center space-y-8 opacity-0 pointer-events-none -translate-y-full md:hidden">
+        <a href="#about" class="mobile-nav-link text-2xl font-bold text-teal-custom">活動簡介</a>
+        <a href="#highlights" class="mobile-nav-link text-2xl font-bold text-teal-custom">精彩亮點</a>
+        <a href="#gallery" class="mobile-nav-link text-2xl font-bold text-teal-custom">精彩回顧</a>
+        <a href="#details" class="mobile-nav-link text-2xl font-bold text-teal-custom">活動資訊</a>
+        <a href="#register" class="mobile-nav-link bg-peach text-white px-10 py-4 rounded-full font-bold text-xl shadow-lg">立即報名</a>
+    </div>
+
+    <!-- 首頁 Hero 區塊 -->
+    <section class="relative h-screen flex flex-col justify-start md:justify-center overflow-hidden" id="hero">
+        <div class="hero-bg-wrapper">
+            <video autoplay loop muted playsinline id="hero-video">
+                <source src="https://vgkahmefqqztzmxwcunu.supabase.co/storage/v1/object/public/flower/6546456456.mp4" type="video/mp4">
+            </video>
+            <div class="hero-overlay"></div>
+        </div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full hero-content pt-20 md:pt-0">
+            <div class="flex flex-col md:flex-row items-center md:justify-start">
+                <div class="w-full sm:w-10/12 md:w-6/12 lg:w-[32%] md:ml-6 lg:ml-20 glass-card p-4 md:p-8 rounded-[24px] md:rounded-[40px] shadow-xl reveal active">
+                    <div class="flex items-center gap-2 mb-2 md:mb-4">
+                        <span class="px-2 py-0.5 bg-[#f33d5b] text-white rounded-full text-[8px] md:text-[10px] font-bold tracking-tighter uppercase">2026 賀歲</span>
+                        <span class="text-[#f33d5b] text-[9px] md:text-[10px] font-bold">2月5日截止報名</span>
+                    </div>
+                    
+                    <h1 class="text-2xl md:text-5xl font-retro-bold text-teal-custom leading-tight mb-3 md:mb-5 orchid-shadow">
+                        新春聚財 <br class="hidden md:block"> <span class="text-peach italic">蘭得規劃</span>
+                    </h1>
+                    
+                    <!-- 倒數計時 -->
+                    <div id="countdown-container" class="w-full">
+                        <div class="countdown-grid">
+                            <div class="countdown-unit"><span class="countdown-val" id="days">00</span><span class="countdown-label">日</span></div>
+                            <div class="countdown-unit"><span class="countdown-val" id="hours">00</span><span class="countdown-label">時</span></div>
+                            <div class="countdown-unit"><span class="countdown-val" id="minutes">00</span><span class="countdown-label">分</span></div>
+                            <div class="countdown-unit"><span class="countdown-val" id="seconds">00</span><span class="countdown-label">秒</span></div>
+                        </div>
+                        <p class="text-teal-custom font-bold text-[9px] md:text-xs tracking-widest flex items-center gap-2 animate-pulse mb-4 md:mb-8">
+                            <span>期待你的到來 🌸</span>
+                        </p>
+                    </div>
+
+                    <p class="hidden md:block text-sm text-gray-900 mb-10 leading-relaxed font-bold">
+                        結合「積金易」教學與蘭花盆景製作，開啟步步高陞的新年。
+                    </p>
+                    
+                    <div class="flex flex-row gap-2 md:gap-4">
+                        <a href="#register" class="flex-1 bg-teal-custom text-white py-3 md:py-4 rounded-xl md:rounded-2xl text-center font-bold shadow-lg text-xs md:text-base btn-pulse">
+                            立即預約 ($88)
+                        </a>
+                        <div class="flex items-center justify-center text-teal-custom font-bold px-3 md:px-5 bg-white/40 rounded-xl md:rounded-2xl border border-white/40 text-xs md:text-base">
+                            📅 2月7日
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="absolute bottom-4 left-1/2 -translate-x-1/2 animate-bounce cursor-pointer z-30" onclick="document.getElementById('about').scrollIntoView({behavior:'smooth'})">
+            <svg class="w-6 h-6 text-teal-custom opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" /></svg>
+        </div>
+    </section>
+
+    <!-- 活動簡介 -->
+    <section id="about" class="py-16 bg-white border-b border-gray-50">
+        <div class="max-w-3xl mx-auto px-6 text-center reveal">
+            <div class="mb-4 text-peach text-2xl">✿</div>
+            <h2 class="text-2xl md:text-3xl font-bold text-teal-custom mb-6 font-retro-bold">結合理財與藝術的獨特體驗</h2>
+            <p class="text-base md:text-lg text-gray-600 leading-relaxed font-light">
+                專業理財顧問分享退休傳承策略，並親手製作寓意優雅的蘭花盆景，讓財富與花香同步綻放。
+            </p>
+        </div>
+    </section>
+
+    <!-- 活動亮點 -->
+    <section id="highlights" class="py-20 bg-teal-50/20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12 reveal">
+                <h2 class="text-2xl md:text-4xl font-bold text-teal-custom font-retro-bold">活動三大亮點</h2>
+                <div class="w-12 h-1 bg-[#f33d5b] mx-auto mt-4 rounded-full"></div>
+            </div>
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="bg-white p-6 md:p-10 rounded-[30px] shadow-sm flex flex-col items-center text-center reveal">
+                    <div class="w-14 h-14 bg-red-50 rounded-2xl flex items-center justify-center mb-6 text-peach">
+                        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
+                    </div>
+                    <h3 class="text-lg font-bold text-teal-custom mb-3">2026 積金易教學</h3>
+                    <p class="text-gray-500 text-xs md:text-sm leading-relaxed">深入解析 eMPF 平台操作，掌握強積金管理。</p>
+                </div>
+                <div class="bg-white p-6 md:p-10 rounded-[30px] shadow-sm flex flex-col items-center text-center reveal" style="transition-delay: 0.1s;">
+                    <div class="w-14 h-14 bg-red-50 rounded-2xl flex items-center justify-center mb-6 text-peach">
+                        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
+                    </div>
+                    <h3 class="text-lg font-bold text-teal-custom mb-3">資產傳承與年金</h3>
+                    <p class="text-gray-500 text-xs md:text-sm leading-relaxed">理財專家分享配置策略，實現財富穩健增值。</p>
+                </div>
+                <div class="bg-white p-6 md:p-10 rounded-[30px] shadow-sm flex flex-col items-center text-center reveal" style="transition-delay: 0.2s;">
+                    <div class="w-14 h-14 bg-red-50 rounded-2xl flex items-center justify-center mb-6 text-peach">
+                        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
+                    </div>
+                    <h3 class="text-lg font-bold text-teal-custom mb-3">新春蘭花盆景</h3>
+                    <p class="text-gray-500 text-xs md:text-sm leading-relaxed">現場指導製作蘭花盆景，寓意新年步步高陞。</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 精彩回顧 -->
+    <section id="gallery" class="py-20 bg-white overflow-hidden">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-4 text-center reveal">
+            <h2 class="text-2xl md:text-4xl font-bold text-teal-custom font-retro-bold">過去活動精彩回顧</h2>
+            <div class="w-12 h-1 bg-[#f33d5b] mx-auto mt-4 rounded-full"></div>
+            <p class="mt-4 text-gray-400 text-[10px] italic tracking-widest uppercase">Swipe to explore</p>
+        </div>
+        <div class="gallery-scroll-container reveal" id="galleryContainer">
+            <!-- JS 將會隨機渲染內容 -->
+        </div>
+    </section>
+
+    <!-- 活動詳情 -->
+    <section id="details" class="py-16 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6">
+            <div class="bg-white border border-gray-100 rounded-[32px] md:rounded-[60px] overflow-hidden shadow-lg flex flex-col md:flex-row reveal">
+                <div class="md:w-1/2 p-8 md:p-16 bg-teal-custom text-white flex flex-col justify-center">
+                    <h2 class="text-2xl md:text-3xl font-bold mb-8 font-retro-bold">活動詳情</h2>
+                    <ul class="space-y-5">
+                        <li class="flex items-center text-sm md:text-lg">
+                            <span class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center mr-4">📅</span>
+                            <span>2026年2月7日 (六) 下午 2:30 至 4:30</span>
+                        </li>
+                        <li class="flex items-center text-sm md:text-lg">
+                            <span class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center mr-4">📍</span>
+                            <span>尖沙咀港威大廈 34樓05 室</span>
+                        </li>
+                        <li class="flex items-center text-sm md:text-lg">
+                            <span class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center mr-4">💰</span>
+                            <span class="text-peach font-bold">$88 (現場付款)</span>
+                        </li>
+                    </ul>
+                </div>
+                <div class="md:w-1/2 bg-gray-100 flex flex-col p-4 md:p-6 text-center">
+                    <div class="map-wrapper shadow-inner mb-4">
+                        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3691.8023153549646!2d114.16544077602334!3d22.294931343033783!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x340400edba951555%3A0x7d251648a7b0553!2sThe%20Gateway%20Tower%202!5e0!3m2!1sen!2shk!4v1705912345678!5m2!1sen!2shk" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
+                    </div>
+                    <a href="https://maps.app.goo.gl/9W1cFXsPovXH2gnVA" target="_blank" class="inline-flex items-center self-center px-6 py-2 bg-teal-custom text-white text-xs font-bold rounded-full shadow-md">開啟地圖導航 ↗</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 報名表單 -->
+    <section id="register" class="py-20 bg-teal-50/10">
+        <div class="max-w-4xl mx-auto px-6">
+            <div class="text-center mb-10 reveal">
+                <h2 class="text-2xl md:text-3xl font-bold text-teal-custom mb-4 font-retro-bold">立即報名</h2>
+                <p class="text-gray-500 text-xs md:text-sm italic">提交後我們將透過 WhatsApp 聯絡您確認</p>
+            </div>
+            
+            <div class="bg-white p-6 md:p-12 rounded-[32px] shadow-xl border border-red-50 reveal">
+                <form id="registrationForm" class="space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6">
+                        <div class="space-y-2">
+                            <label class="text-xs font-bold text-teal-custom ml-1 uppercase tracking-wider">姓名*</label>
+                            <input type="text" name="name" required class="form-input" placeholder="您的稱呼">
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-xs font-bold text-teal-custom ml-1 uppercase tracking-wider">電話號碼*</label>
+                            <input type="tel" name="email" required class="form-input" placeholder="WhatsApp 號碼">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6">
+                        <div class="space-y-2">
+                            <label class="text-xs font-bold text-teal-custom ml-1 uppercase tracking-wider">年齡範圍*</label>
+                            <select name="age" required class="form-input form-select">
+                                <option value="" disabled selected>請選擇</option>
+                                <option value="18-33歲">18-33歲</option>
+                                <option value="33-50歲">33-50歲</option>
+                                <option value="50-65歲">50-65歲</option>
+                                <option value="65歲以上">65歲以上</option>
+                            </select>
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-xs font-bold text-teal-custom ml-1 uppercase tracking-wider">出席人數*</label>
+                            <input type="text" name="member" required class="form-input" placeholder="例如：1人">
+                        </div>
+                    </div>
+                    <button type="submit" id="submitBtn" class="w-full bg-teal-custom text-white py-4 md:py-5 rounded-xl md:rounded-2xl text-lg font-bold shadow-lg transition-all btn-pulse">
+                        <span id="btnText">確認報名資料</span>
+                        <div id="loadingSpinner" class="hidden ml-3 w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <footer class="py-10 bg-white text-center border-t border-gray-50">
+        <p class="text-[10px] md:text-xs text-gray-300">© 2026 蘭得規劃 & 智慧「友」伴. All rights reserved.</p>
+    </footer>
+
+    <script>
+        // 相片數據
+        const galleryImages = [
+            "https://vgkahmefqqztzmxwcunu.supabase.co/storage/v1/object/public/Photo%20ablum/26ea4a19-0bde-439c-8586-5dc1a6defca0.jpeg",
+            "https://vgkahmefqqztzmxwcunu.supabase.co/storage/v1/object/public/Photo%20ablum/282bf8ff-2f3c-460c-9bbe-4e0aa461fc73.jpeg",
+            "https://vgkahmefqqztzmxwcunu.supabase.co/storage/v1/object/public/Photo%20ablum/31a4b16e-7460-41c9-b55d-d8f04c7dc564.jpeg",
+            "https://vgkahmefqqztzmxwcunu.supabase.co/storage/v1/object/public/Photo%20ablum/427d2f04-346a-4c9a-a163-0c618c13e2fe.jpeg",
+            "https://vgkahmefqqztzmxwcunu.supabase.co/storage/v1/object/public/Photo%20ablum/5e39b0e8-b9ad-4868-901a-785a1a7a6a60.jpeg",
+            "https://vgkahmefqqztzmxwcunu.supabase.co/storage/v1/object/public/Photo%20ablum/6002eacf-95aa-4212-988d-d749f52f8beb.jpeg",
+            "https://vgkahmefqqztzmxwcunu.supabase.co/storage/v1/object/public/Photo%20ablum/6a91126b-8875-4411-b21a-ad205e6dabf1.jpeg",
+            "https://vgkahmefqqztzmxwcunu.supabase.co/storage/v1/object/public/Photo%20ablum/7e110486-c65e-4c86-afd6-74406ccc6520.jpeg",
+            "https://vgkahmefqqztzmxwcunu.supabase.co/storage/v1/object/public/Photo%20ablum/ab4e9af0-cc67-4345-846c-7fc70d2fe3d0.jpeg",
+            "https://vgkahmefqqztzmxwcunu.supabase.co/storage/v1/object/public/Photo%20ablum/bf985d3f-5ee8-4b68-b26b-58be3e75ed0e.jpeg",
+            "https://vgkahmefqqztzmxwcunu.supabase.co/storage/v1/object/public/Photo%20ablum/d60098b1-ee61-4bb2-8f7e-2d92055b27fa.jpeg"
+        ];
+
+        // 隨機渲染相簿與中心放大監聽
+        function renderRandomGallery() {
+            const container = document.getElementById('galleryContainer');
+            if(!container) return;
+            const shuffled = [...galleryImages].sort(() => Math.random() - 0.5);
+            container.innerHTML = shuffled.map(src => `<div class="gallery-item"><img src="${src}" alt="過去活動照片"></div>`).join('');
+
+            const observerOptions = { root: container, threshold: 0.7 };
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) { entry.target.classList.add('is-focused'); }
+                    else { entry.target.classList.remove('is-focused'); }
+                });
+            }, observerOptions);
+            document.querySelectorAll('.gallery-item').forEach(item => observer.observe(item));
+        }
+
+        // 倒數計時邏輯
+        function updateCountdown() {
+            const target = new Date("Feb 7, 2026 14:30:00").getTime();
+            const now = new Date().getTime();
+            const dist = target - now;
+            if (dist < 0) return;
+            document.getElementById("days").innerText = Math.floor(dist / 86400000).toString().padStart(2, '0');
+            document.getElementById("hours").innerText = Math.floor((dist % 86400000) / 3600000).toString().padStart(2, '0');
+            document.getElementById("minutes").innerText = Math.floor((dist % 3600000) / 60000).toString().padStart(2, '0');
+            document.getElementById("seconds").innerText = Math.floor((dist % 60000) / 1000).toString().padStart(2, '0');
+        }
+
+        // 手機版選單切換
+        const menuToggle = document.getElementById('menu-toggle');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const openIcon = document.getElementById('menu-icon-open');
+        const closeIcon = document.getElementById('menu-icon-close');
+        
+        menuToggle.addEventListener('click', () => {
+            const isOpen = !mobileMenu.classList.contains('opacity-0');
+            if(isOpen) {
+                mobileMenu.classList.add('opacity-0', 'pointer-events-none', '-translate-y-full');
+                openIcon.classList.remove('hidden'); closeIcon.classList.add('hidden');
+                document.body.style.overflow = 'auto';
+            } else {
+                mobileMenu.classList.remove('opacity-0', 'pointer-events-none', '-translate-y-full');
+                openIcon.classList.add('hidden'); closeIcon.classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+            }
+        });
+        document.querySelectorAll('.mobile-nav-link').forEach(link => link.addEventListener('click', () => menuToggle.click()));
+
+        // 花瓣動畫
+        function createPetals() {
+            const container = document.getElementById('particle-container');
+            for (let i = 0; i < 10; i++) {
+                const petal = document.createElement('div');
+                petal.className = 'petal';
+                const size = (Math.random() * 8 + 6) + 'px';
+                petal.style.width = size; petal.style.height = size;
+                petal.style.left = Math.random() * 100 + 'vw';
+                petal.style.animationDuration = (Math.random() * 8 + 6) + 's';
+                petal.style.animationDelay = (Math.random() * 5) + 's';
+                container.appendChild(petal);
+            }
+        }
+
+        // 滾動觀察器
+        const revealObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('active'); });
+        }, { threshold: 0.1 });
+        document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+
+        // 電腦版拖拽相簿
+        const slider = document.getElementById('galleryContainer');
+        let isDown = false, startX, scrollLeft;
+        slider.addEventListener('mousedown', (e) => { isDown = true; startX = e.pageX - slider.offsetLeft; scrollLeft = slider.scrollLeft; });
+        slider.addEventListener('mouseleave', () => isDown = false);
+        slider.addEventListener('mouseup', () => isDown = false);
+        slider.addEventListener('mousemove', (e) => { if (!isDown) return; e.preventDefault(); slider.scrollLeft = scrollLeft - (e.pageX - slider.offsetLeft - startX) * 2; });
+
+        // 表單提交處理
+        const form = document.getElementById('registrationForm');
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbx1HQzWYWOJ4RA-8U-rJwU4IExAtUwbkdkVvRj99NzSeTWUxrh_H-tKc-CEXmA-Xu_1hQ/exec'; 
+
+        form.addEventListener('submit', e => {
+            e.preventDefault();
+            const btn = document.getElementById('submitBtn');
+            const btnT = document.getElementById('btnText');
+            btn.disabled = true;
+            btnT.innerText = '提交中...';
+            document.getElementById('loadingSpinner').classList.remove('hidden');
+            fetch(scriptURL, { method: 'POST', body: new FormData(form), mode: 'no-cors' })
+            .then(() => { 
+                form.reset(); 
+                alert('報名成功！我們將會透過 WhatsApp 與您聯絡。'); 
+                btn.disabled = false; 
+                btnT.innerText = '確認報名資料';
+                document.getElementById('loadingSpinner').classList.add('hidden'); 
+            })
+            .catch(() => {
+                alert('提交發生錯誤，請稍後再試。');
+                btn.disabled = false;
+                btnT.innerText = '確認報名資料';
+                document.getElementById('loadingSpinner').classList.add('hidden');
+            });
+        });
+
+        window.onload = () => { createPetals(); renderRandomGallery(); updateCountdown(); setInterval(updateCountdown, 1000); };
+    </script>
+</body>
+</html>
+
